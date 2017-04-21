@@ -65,8 +65,9 @@ public class KurentoTreeServerApp implements JsonRpcConfigurer {
   public static final String KMS_URI_DEFAULT = "ws://localhost:8888/kurento";
 
   public static final String KMS_MODE_PROPERTY = "kms.mode";
+  public static final int KMS_MAX_STREAMS = 1;
 
-  private KmsMode kmsMode = getProperty(KMS_MODE_PROPERTY, KmsMode.NUBOMEDIA);
+  private KmsMode kmsMode = getProperty(KMS_MODE_PROPERTY, KmsMode.REGISTRAR);
 
   private enum KmsMode {
     REGISTRAR, NUBOMEDIA
@@ -79,11 +80,15 @@ public class KurentoTreeServerApp implements JsonRpcConfigurer {
 
     switch (kmsMode) {
       case REGISTRAR:
-        return new RealElasticKmsManager(Arrays.asList(loadKmsUrl()));
+        return new RealElasticKmsManager();
       case NUBOMEDIA:
         return new MinWebRtcEpsKmsManager();
       default:
-        throw new TreeException("Unsupported kmsMode " + kmsMode);
+        try {
+          return new RealElasticKmsManager(Arrays.asList(loadKmsUrl()));
+        } catch (Exception e) {
+          throw new TreeException("Unsupported kmsMode " + kmsMode);
+        }
     }
   }
 
@@ -102,7 +107,7 @@ public class KurentoTreeServerApp implements JsonRpcConfigurer {
 
     switch (kmsMode) {
       case REGISTRAR:
-        return new LessLoadedElasticTM(kmsManager);
+        return new LessLoadedElasticAllKMSsTM(kmsManager, KMS_MAX_STREAMS);
       case NUBOMEDIA:
         LessLoadedOnlySource2TM treeManager = new LessLoadedOnlySource2TM(kmsManager);
         ((MinWebRtcEpsKmsManager) kmsManager).setKmsListener(treeManager);

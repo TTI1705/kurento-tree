@@ -34,6 +34,8 @@ public class RealElasticKmsManager extends KmsManager implements KmsRegistrar {
     }
   }
 
+  public RealElasticKmsManager() {}
+
   private void addKms(String kmsWsUri) {
     this.kmss.add(new RealKms(KurentoClient.create(kmsWsUri)));
   }
@@ -42,6 +44,11 @@ public class RealElasticKmsManager extends KmsManager implements KmsRegistrar {
     return kmss;
   }
 
+  /**
+   * Takes a WsUri and connects it as a KurentoClient
+   * Should be in the form ws://<URL>:8888/kurento
+   * @param kmsWsUri
+   */
   @Override
   public void register(String kmsWsUri) {
     addKms(kmsWsUri);
